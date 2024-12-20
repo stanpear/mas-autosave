@@ -14,3 +14,11 @@ init -989 python:
             repository_name="mas-autosave",
             extraction_depth=2
         )
+
+init -980 python hide:
+    import store
+    import os
+
+    script_dir = store.fom_getScriptDir(fallback="game/Submods/Autosave")
+    script_dir = renpy.config.basedir + "/" + script_dir
+    os.environ["SSL_CERT_FILE"] = script_dir + "/misc/cacert.pem"
