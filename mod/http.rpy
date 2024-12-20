@@ -22,7 +22,6 @@ init -980 python in _fom_autosave_http:
 
 init -100 python in _fom_autosave_http:
     import sys
-    import json
 
     if sys.version_info.major == 2: # Python v2 only
         import urllib2
