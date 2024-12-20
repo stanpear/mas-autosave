@@ -5,7 +5,8 @@ init -99 python in _fom_autosave_github:
     def call_method(http_method, method_path, token=None, payload=None):
         github_api_url = "https://api.github.com{method_path}".format(method_path=method_path)
         request_headers = {
-            "User-Agent": "Monika After Story v{version}".format(version=renpy.config.version)
+            "User-Agent": "Monika After Story v{version}".format(version=renpy.config.version),
+            "Accept": "application/json"
         }
 
         if payload is not None:
@@ -17,4 +18,4 @@ init -99 python in _fom_autosave_github:
         if token is not None:
             request_headers["Authorization"] = "Bearer {token}".format(token=token)
 
-        return request(http_method, github_api_url, header, payload_json)
+        return request(http_method, github_api_url, request_headers, payload_json)
