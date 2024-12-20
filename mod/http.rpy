@@ -1,10 +1,20 @@
-init -980 python hide:
+init -980 python in _fom_autosave_http:
+    import contextlib
     import store
     import os
 
     script_dir = store.fom_getScriptDir(fallback="game/Submods/Autosave")
     script_dir = renpy.config.basedir + "/" + script_dir
-    os.environ["SSL_CERT_FILE"] = script_dir + "/misc/cacert.pem"
+    SSL_CERT_FILE = script_dir + "/misc/cacert.pem"
+
+    @contextlib.contextmanager
+    def use_cert(cert_file):
+        try:
+            ssl_cert_backup = os.environ["SSL_CERT_FILE"]
+            os.environ["SSL_CERT_FILE"] = cert_file
+            yield
+        finally:
+            os.environ["SSL_CERT_FILE"] = ssl_cert_backup
 
 init -100 python in _fom_autosave_http:
     import sys
@@ -14,17 +24,18 @@ init -100 python in _fom_autosave_http:
         import urllib2
 
         def request(method, url, headers=None, body=None):
-            req = urllib2.Request(url, data=body)
-            req.get_method = lambda: method
+            with use_cert(SSL_CERT_FILE):
+                req = urllib2.Request(url, data=body)
+                req.get_method = lambda: method
 
-            if headers is None:
-                headers = {}
-            for k, v in headers.items():
-                req.add_header(k, v)
+                if headers is None:
+                    headers = {}
+                for k, v in headers.items():
+                    req.add_header(k, v)
 
-            opener = urllib2.build_opener(urllib2.HTTPHandler)
-            res = opener.open(req)
-            status = res.getcode()
-            res_body = res.read()
+                opener = urllib2.build_opener(urllib2.HTTPHandler)
+                res = opener.open(req)
+                status = res.getcode()
+                res_body = res.read()
 
-            return status, res_body
+                return status, res_body
