@@ -10,11 +10,15 @@ init -980 python in _fom_autosave_http:
     @contextlib.contextmanager
     def use_cert(cert_file):
         try:
-            ssl_cert_backup = os.environ["SSL_CERT_FILE"]
+            ssl_cert_backup = os.environ.get("SSL_CERT_FILE", None)
             os.environ["SSL_CERT_FILE"] = cert_file
             yield
+
         finally:
-            os.environ["SSL_CERT_FILE"] = ssl_cert_backup
+            if ssl_cert_backup is not None:
+                os.environ["SSL_CERT_FILE"] = ssl_cert_backup
+            else:
+                del os.environ["SSL_CERT_FILE"]
 
 init -100 python in _fom_autosave_http:
     import sys
