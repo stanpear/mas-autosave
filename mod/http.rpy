@@ -1,4 +1,4 @@
-init -980 python in _fom_autosave_http:
+init -999 python in _fom_autosave_http:
     import contextlib
     import store
     import os
@@ -20,7 +20,7 @@ init -980 python in _fom_autosave_http:
             else:
                 del os.environ["SSL_CERT_FILE"]
 
-init -100 python in _fom_autosave_http:
+init -998 python in _fom_autosave_http:
     import sys
 
     if sys.version_info.major == 2: # Python v2 only

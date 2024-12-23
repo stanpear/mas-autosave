@@ -3,7 +3,8 @@ init -990 python:
         author="Friends of Monika",
         name="Autosave",
         description=_("Automatic backing up to Github."),
-        version="1.0.0"
+        version="1.0.0",
+        settings_pane="fom_autosave_settings"
     )
 
 init -989 python:
