@@ -116,6 +116,8 @@ screen fom_autosave_settings_github_oauth2():
     zorder 200
     add mas_getTimeFile("gui/overlay/confirm.png")
 
+    key "mas_game_menu" action NullAction()
+
     frame:
         vbox:
             xmaximum 500
