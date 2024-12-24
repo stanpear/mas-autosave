@@ -64,55 +64,41 @@ screen fom_autosave_settings__repo_select():
         except Exception as e:
             error = e
 
-    style_prefix "confirm"
-    add mas_getTimeFile("gui/overlay/confirm.png")
-    modal True
-    zorder 200
+    use fom_autosave_screens__confirm(xmaximum=500, ymaximum=400, spacing=30):
+        style_prefix "confirm"
 
-    key "mas_game_menu" action NullAction()
+        text _("Select repository"):
+            style "confirm_prompt"
+            xalign 0.5
 
-    frame:
-        vbox:
-            xmaximum 500
-            ymaximum 400
-            xfill True
-
-            align (0.5, 0.5)
-            spacing 30
-
-            text _("Select repository"):
-                style "confirm_prompt"
+        if not promise.is_complete():
+            text _("Loading..."):
                 xalign 0.5
+                text_align 0.5
 
-            if not promise.is_complete():
-                text _("Loading..."):
-                    xalign 0.5
-                    text_align 0.5
-
-            else:
-                hbox:
-                    viewport id "repos":
-                        xalign 0.5
-                        xfill True
-                        yfill True
-
-                        mousewheel True
-                        draggable True
-
-                        vbox:
-                            for repo in repos:
-                                textbutton repo["name"] action ([
-                                    SetDict(persistent._fom_autosave_config_github, "repo_name", repo["name"]),
-                                    Hide("fom_autosave_settings__repo_select")
-                                ])
-
-                    vbar value YScrollValue("repos")
-
+        else:
             hbox:
-                xalign 0.5
-                spacing 10
+                viewport id "repos":
+                    xalign 0.5
+                    xfill True
+                    yfill True
 
-                textbutton _("Back"):
-                    action Hide("fom_autosave_settings__repo_select")
-                    sensitive promise.is_complete()
+                    mousewheel True
+                    draggable True
 
+                    vbox:
+                        for repo in repos:
+                            textbutton repo["name"] action ([
+                                SetDict(persistent._fom_autosave_config_github, "repo_name", repo["name"]),
+                                Hide("fom_autosave_settings__repo_select")
+                            ])
+
+                vbar value YScrollValue("repos")
+
+        hbox:
+            xalign 0.5
+            spacing 10
+
+            textbutton _("Back"):
+                action Hide("fom_autosave_settings__repo_select")
+                sensitive promise.is_complete()
