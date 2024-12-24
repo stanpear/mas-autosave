@@ -37,5 +37,8 @@ init -997 python in _fom_autosave_github:
             }
         })
 
+    def get_own_repos(token):
+        return call_method("GET", "/user/repos", token)
+
     def get_self(token):
         return call_method("GET", "/user", token)
