@@ -132,7 +132,7 @@ screen fom_autosave_settings__force_save():
     use fom_autosave_screens__confirm(xmaximum=500, ymaximum=400, spacing=30):
         style_prefix "confirm"
 
-        text _("Select repository"):
+        text _("Force save"):
             style "confirm_prompt"
             xalign 0.5
 
