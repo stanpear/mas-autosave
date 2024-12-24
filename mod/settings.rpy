@@ -119,12 +119,11 @@ screen fom_autosave_settings__force_save():
     timer 0.5 action Function(renpy.restart_interaction) repeat True
     on "show" action Function(promise.run_in_background)
 
-    $ error = None
-
     python:
         try:
             if promise.is_complete():
                 promise.get()
+            error = None
         except Exception as e:
             store._fom_autosave_logging.logger.error("Failed to upload save: {0}", e)
             error = e
