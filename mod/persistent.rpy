@@ -1,4 +1,4 @@
-init -100 python in _fom_autosave_persistent:
+init -1999 python in _fom_autosave_persistent:
     import renpy
 
     def get_persistent_path():

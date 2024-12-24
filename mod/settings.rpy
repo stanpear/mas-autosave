@@ -3,7 +3,8 @@ default persistent._fom_autosave_config_github = None
 init -1000 python:
     if persistent._fom_autosave_config_github is None:
         persistent._fom_autosave_config_github = {
-            "repo_name": ""
+            "repo_name": "",
+            "commit_fmt": "[[Autosave] Persistent backup ([reason])"
         }
 
 init -978 python in _fom_autosave_config:
@@ -18,13 +19,15 @@ init -978 python in _fom_autosave_config:
     mas_registerAPIKey(KEY_ID_GITHUB, _("[[Autosave] Github API token"), on_change=on_github_key_change)
 
 screen fom_autosave_settings():
+    $ github_api_key = mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
+    $ repo_name = persistent._fom_autosave_config_github.get("repo_name", None)
+
     vbox:
         style_prefix "check"
         xmaximum 800
         xfill True
 
         hbox:
-            $ github_api_key = mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
             if github_api_key:
                 text _("- API token {color=#84cc16}is set{/color}")
             else:
@@ -35,16 +38,19 @@ screen fom_autosave_settings():
                 xoffset -12
 
         hbox:
-            $ repo_name = persistent._fom_autosave_config_github.get("repo_name", None)
             if repo_name:
                 text _("- Repository {color=#84cc16}is set{/color}{space=10}([repo_name])")
             else:
                 text _("- Repository {color=#ef4444}is not selected{/color}")
 
             textbutton _("Select repository"):
-                action Show("fom_autosave_settings__repo_select")
                 sensitive bool(github_api_key)
+                action Show("fom_autosave_settings__repo_select")
                 xoffset -12
+
+        textbutton _("Force save"):
+            sensitive github_api_key and repo_name
+            action Show("fom_autosave_settings__force_save")
 
 screen fom_autosave_settings__repo_select():
     default github_api_key = mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
@@ -53,16 +59,17 @@ screen fom_autosave_settings__repo_select():
     timer 0.5 action Function(renpy.restart_interaction) repeat True
     on "show" action Function(promise.run_in_background)
 
-    $ repos = None
-    $ error = None
+    default repos = None
+    default error = None
 
     python:
         try:
             if promise.is_complete():
-                status, body = promise.get()
-                repos = body
+                status, repos = promise.get()
         except Exception as e:
-            error = e
+            if error is not None:
+                store._fom_autosave_logging.logger.error("Failed to load repositories: {0}", e)
+                error = e
 
     use fom_autosave_screens__confirm(xmaximum=500, ymaximum=400, spacing=30):
         style_prefix "confirm"
@@ -75,7 +82,10 @@ screen fom_autosave_settings__repo_select():
             text _("Loading..."):
                 xalign 0.5
                 text_align 0.5
-
+        elif error is not None:
+            text _("Failed to load repositories. Check logs."):
+                xalign 0.5
+                text_align 0.5
         else:
             hbox:
                 viewport id "repos":
@@ -102,3 +112,48 @@ screen fom_autosave_settings__repo_select():
             textbutton _("Back"):
                 action Hide("fom_autosave_settings__repo_select")
                 sensitive promise.is_complete()
+
+screen fom_autosave_settings__force_save():
+    default promise = store._fom_autosave_task.AsyncTask(store._fom_autosave_github.backup_service.upload, "force save")
+
+    timer 0.5 action Function(renpy.restart_interaction) repeat True
+    on "show" action Function(promise.run_in_background)
+
+    $ error = None
+
+    python:
+        try:
+            if promise.is_complete():
+                promise.get()
+        except Exception as e:
+            store._fom_autosave_logging.logger.error("Failed to upload save: {0}", e)
+            error = e
+
+    use fom_autosave_screens__confirm(xmaximum=500, ymaximum=400, spacing=30):
+        style_prefix "confirm"
+
+        text _("Select repository"):
+            style "confirm_prompt"
+            xalign 0.5
+
+        if not promise.is_complete():
+            text _("Saving..."):
+                xalign 0.5
+                text_align 0.5
+        elif error is not None:
+            text _("Failed to save. Check logs."):
+                xalign 0.5
+                text_align 0.5
+        else:
+            text _("Saved!"):
+                xalign 0.5
+                text_align 0.5
+
+        hbox:
+            xalign 0.5
+            spacing 10
+
+            textbutton _("Back"):
+                action Hide("fom_autosave_settings__force_save")
+                sensitive promise.is_complete()
+

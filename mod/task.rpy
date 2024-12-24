@@ -20,6 +20,9 @@ init -1000 python in _fom_autosave_task:
         def is_complete(self):
             return self._promise is not None and self._promise.done()
 
+        def is_running(self):
+            return self._running
+
         def get(self):
             if not self.is_complete():
                 raise RuntimeError("Task is either running or has not yet started.")
