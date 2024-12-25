@@ -1,4 +1,4 @@
-init -997 python in _fom_autosave_github:
+init -897 python in _fom_autosave_github:
     from store._fom_autosave_http import request
     from store._fom_autosave_common import PersistentBackup
     from store._fom_autosave_persistent import get_persistent_path
@@ -25,7 +25,6 @@ init -997 python in _fom_autosave_github:
         if token is not None:
             request_headers["Authorization"] = "Bearer {token}".format(token=token)
 
-        store._fom_autosave_logging.logger.debug("url={url!r}", url=github_api_url)
         status, body = request(http_method, github_api_url, request_headers, payload_json)
         return (status, json.loads(body))
 
@@ -71,6 +70,12 @@ init -997 python in _fom_autosave_github:
 
 
     class GithubBackup(PersistentBackup):
+        def is_configured(self):
+            token = store.mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
+            commit_fmt = persistent._fom_autosave_config_github["commit_fmt"]
+            repo_name=persistent._fom_autosave_config_github["repo_name"]
+            return bool(token and commit_fmt and repo_name)
+
         def upload(self, reason):
             token = store.mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
             status, user_info = get_self(token)

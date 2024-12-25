@@ -2,18 +2,25 @@ init -999 python in _fom_autosave_common:
     from store._fom_autosave_task import AsyncTask
 
     class PersistentBackup(object):
+        def is_configured(self):
+            pass
+
         def upload(self, reason):
             pass
 
         def download(self):
             pass
 
-    def backup_persistent(reason="autosave"):
-        renpy.show_screen("fom_autosave_common__save", reason)
+init 100 python in _fom_autosave_common:
+    from store._fom_autosave_github import backup_service
+    SELECTED_BACKUP = backup_service # only Github for now
 
+    def backup_persistent(reason="autosave", on_complete=None, on_error=None):
+        if SELECTED_BACKUP.is_configured():
+            renpy.show_screen("fom_autosave_common__save", reason, on_complete, on_error)
 
 screen fom_autosave_common__save(reason, on_complete=None, on_error=None):
-    default promise = store._fom_autosave_task.AsyncTask(store._fom_autosave_github.backup_service.upload, reason)
+    default promise = store._fom_autosave_task.AsyncTask(store._fom_autosave_common.SELECTED_BACKUP.upload, reason)
     timer 0.5 action Function(renpy.restart_interaction) repeat True
     on "show" action Function(promise.run_in_background)
 

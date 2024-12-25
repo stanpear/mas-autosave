@@ -1,8 +1,8 @@
 default persistent._fom_autosave_last_autosave = None
 
 init -1000 python in _fom_autosave_timer:
-    from store import persistent
     from datetime import datetime, timedelta
+    from store import persistent
 
     BACKUP_FREQ = {
         0: ("Off", None),
@@ -14,6 +14,7 @@ init -1000 python in _fom_autosave_timer:
 
 init 10 python in _fom_autosave_timer:
     from store.mas_submod_utils import functionplugin
+    from store._fom_autosave_logging import logger
 
     def has_period_elapsed():
         last = persistent._fom_autosave_last_autosave
@@ -28,16 +29,22 @@ init 10 python in _fom_autosave_timer:
 
         return now - last > delta
 
-    @functionplugin("ch30_hour")
-    def do_hourly():
+    def try_do_backup():
         def on_backup_complete():
             persistent._fom_autosave_last_autosave = datetime.now()
 
         if has_period_elapsed():
+            logger.debug("Attempting timed backup (may be overridden if remote is not configured.)")
             freq = persistent._fom_autosave_config_common["backup_freq"]
             name, _ = BACKUP_FREQ[freq]
-            renpy.show_screen(
-                "fom_autosave_common__save",
-                "{0} auto-backup".format(name),
-                on_backup_complete
-            )
+            store._fom_autosave_common.backup_persistent(
+                reason="{0} auto-backup".format(name),
+                on_complete=on_backup_complete)
+
+    @functionplugin("ch30_hour")
+    def do_hourly():
+        try_do_backup()
+
+    @functionplugin("ch30_start")
+    def do_start():
+        try_do_backup()
