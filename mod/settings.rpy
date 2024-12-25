@@ -75,6 +75,12 @@ screen fom_autosave_settings():
                 hovered SetField(tooltip_disp, "value", _("Click to force save the persistent to Github."))
                 unhovered SetField(tooltip_disp, "value", tooltip_disp.default)
 
+            textbutton _("Load persistent"):
+                sensitive github_api_key and repo_name
+                action Show("fom_autosave_settings__commit_select")
+                hovered SetField(tooltip_disp, "value", _("Click to select saved persistent to load."))
+                unhovered SetField(tooltip_disp, "value", tooltip_disp.default)
+
 screen fom_autosave_settings__repo_select():
     default github_api_key = mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
     default promise = store._fom_autosave_task.AsyncTask(store._fom_autosave_github.get_own_repos, github_api_key)
@@ -91,7 +97,7 @@ screen fom_autosave_settings__repo_select():
                 status, repos = promise.get()
         except Exception as e:
             if error is None:
-                store._fom_autosave_logging.logger.error("Failed to load repositories: {0}", e)
+                store._fom_autosave_logging.logger.error(_("Failed to load repositories: {0}"), e)
                 error = e
 
     use fom_autosave_screens__confirm(xmaximum=500, ymaximum=400, spacing=30):
@@ -124,6 +130,7 @@ screen fom_autosave_settings__repo_select():
                     vbox:
                         for repo in repos:
                             textbutton repo["name"] action ([
+                                SetDict(persistent._fom_autosave_config_github, "repo_owner", repo["owner"]["login"]),
                                 SetDict(persistent._fom_autosave_config_github, "repo_name", repo["name"]),
                                 Hide("fom_autosave_settings__repo_select")
                             ])
@@ -150,7 +157,7 @@ screen fom_autosave_settings__force_save(backup_service):
                 promise.get()
             error = None
         except Exception as e:
-            store._fom_autosave_logging.logger.error("Failed to upload save: {0}", e)
+            store._fom_autosave_logging.logger.error(_("Failed to upload save: {0}"), e)
             error = e
 
     use fom_autosave_screens__confirm(xmaximum=400, ymaximum=200, spacing=30):
@@ -189,3 +196,71 @@ screen fom_autosave_settings__slider(title, value, display, tooltip):
             hovered SetField(tooltip_disp, "value", tooltip)
             unhovered SetField(tooltip_disp, "value", tooltip_disp.default)
         text display
+
+screen fom_autosave_settings__commit_select():
+    default github_api_key = mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
+    default promise = store._fom_autosave_task.AsyncTask(store._fom_autosave_github.list_commits,
+        repo_owner=persistent._fom_autosave_config_github["repo_owner"],
+        repo_name=persistent._fom_autosave_config_github["repo_name"],
+        repo_path="persistent",
+        token=github_api_key)
+
+    timer 0.5 action Function(renpy.restart_interaction) repeat True
+    on "show" action Function(promise.run_in_background)
+
+    default commits = None
+    default error = None
+
+    python:
+        try:
+            if promise.is_complete():
+                status, commits = promise.get()
+        except Exception as e:
+            if error is None:
+                store._fom_autosave_logging.logger.error(_("Failed to load saves: {0}"), e)
+                error = e
+
+    use fom_autosave_screens__confirm(xmaximum=800, ymaximum=400, spacing=30):
+        style_prefix "confirm"
+
+        text _("Load persistent"):
+            style "confirm_prompt"
+            xalign 0.5
+
+        if not promise.is_complete():
+            text _("Loading..."):
+                xalign 0.5
+                text_align 0.5
+
+        elif error is not None:
+            text _("Failed to load saves. Check logs."):
+                xalign 0.5
+                text_align 0.5
+
+        else:
+            hbox:
+                viewport id "commits":
+                    xalign 0.5
+                    xfill True
+                    yfill True
+
+                    mousewheel True
+                    draggable True
+
+                    vbox:
+                        for commit in commits:
+                            $ commit_name = commit["commit"]["message"]
+                            $ commit_date = commit["commit"]["author"]["date"]
+                            vbox:
+                                textbutton "[commit_name!q]" action ([Hide("fom_autosave_settings__commit_select")])
+                                text _("{size=-6}Uploaded at [commit_date]{/size}")
+
+                vbar value YScrollValue("commits")
+
+        hbox:
+            xalign 0.5
+            spacing 10
+
+            textbutton _("Back"):
+                action Hide("fom_autosave_settings__commit_select")
+                sensitive promise.is_complete()

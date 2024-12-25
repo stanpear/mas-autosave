@@ -99,10 +99,6 @@ init -897 python in _fom_autosave_github:
 
         def upload(self):
             token = store.mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
-            status, user_info = get_self(token)
-            if status != 200:
-                raise ValueError("Unexpected status code {0} != 200".format(status))
-
             commit_fmt = persistent._fom_autosave_config_github["commit_fmt"]
             commit_message = renpy.substitute(commit_fmt, {"reason": self._reason})
 
@@ -110,7 +106,7 @@ init -897 python in _fom_autosave_github:
             status, commit = commit_file(
                 file_path=per_path,
                 repo_path="persistent",
-                repo_owner=user_info["login"],
+                repo_owner=persistent._fom_autosave_config_github["repo_owner"],
                 repo_name=persistent._fom_autosave_config_github["repo_name"],
                 commit_message=commit_message,
                 token=token
@@ -118,11 +114,7 @@ init -897 python in _fom_autosave_github:
 
         def download(self):
             token = store.mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
-            status, user_info = get_self(token)
-            if status != 200:
-                raise ValueError("Unexpected status code {0} != 200".format(status))
-
-            repo_owner = user_info["login"]
+            repo_owner = persistent._fom_autosave_config_github["repo_owner"]
             repo_name = persistent._fom_autosave_config_github["repo_name"]
             repo_path = "persistent"
 
