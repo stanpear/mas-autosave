@@ -1,6 +1,12 @@
+default persistent._fom_autosave_config_common = None
 default persistent._fom_autosave_config_github = None
 
 init -1000 python:
+    if persistent._fom_autosave_config_common is None:
+        persistent._fom_autosave_config_common = {
+            "backup_freq": 0
+        }
+
     if persistent._fom_autosave_config_github is None:
         persistent._fom_autosave_config_github = {
             "repo_name": "",
@@ -18,15 +24,26 @@ init -978 python in _fom_autosave_config:
     KEY_ID_GITHUB = "fom_autosave_config_github_apikey"
     mas_registerAPIKey(KEY_ID_GITHUB, _("[[Autosave] Github API token"), on_change=on_github_key_change)
 
+    BACKUP_FREQ_NAMES = {
+        0: "Off",
+        1: "Hourly",
+        2: "Daily",
+        3: "Weekly",
+        4: "Monthly"
+    }
+
+
 screen fom_autosave_settings():
     $ github_api_key = mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
     $ repo_name = persistent._fom_autosave_config_github.get("repo_name", None)
+    $ tooltip_disp = renpy.get_screen("submods", "screens").scope["tooltip"]
 
     vbox:
         style_prefix "check"
         xmaximum 800
         xfill True
 
+        text _("Github setup checklist:")
         hbox:
             if github_api_key:
                 text _("- API token {color=#84cc16}is set{/color}")
@@ -35,6 +52,8 @@ screen fom_autosave_settings():
 
             textbutton _("Open API keys menu"):
                 action Show("mas_apikeys")
+                hovered SetField(tooltip_disp, "value", _("Click to open API keys menu."))
+                unhovered SetField(tooltip_disp, "value", tooltip_disp.default)
                 xoffset -12
 
         hbox:
@@ -46,11 +65,22 @@ screen fom_autosave_settings():
             textbutton _("Select repository"):
                 sensitive bool(github_api_key)
                 action Show("fom_autosave_settings__repo_select")
+                hovered SetField(tooltip_disp, "value", _("Click to select repository to use for backing up."))
+                unhovered SetField(tooltip_disp, "value", tooltip_disp.default)
                 xoffset -12
+
+        vbox:
+            use fom_autosave_settings__slider(
+                title=_("Backup frequency"),
+                value=DictValue(persistent._fom_autosave_config_common, "backup_freq", offset=0, range=len(store._fom_autosave_config.BACKUP_FREQ_NAMES) - 1),
+                display=store._fom_autosave_config.BACKUP_FREQ_NAMES[persistent._fom_autosave_config_common["backup_freq"]],
+                tooltip=_("You can set automatic backup frequency by adjusting this slider."))
 
         textbutton _("Force save"):
             sensitive github_api_key and repo_name
             action Show("fom_autosave_settings__force_save")
+            hovered SetField(tooltip_disp, "value", _("Click to force save the persistent to Github."))
+            unhovered SetField(tooltip_disp, "value", tooltip_disp.default)
 
 screen fom_autosave_settings__repo_select():
     default github_api_key = mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
@@ -128,7 +158,7 @@ screen fom_autosave_settings__force_save():
             store._fom_autosave_logging.logger.error("Failed to upload save: {0}", e)
             error = e
 
-    use fom_autosave_screens__confirm(xmaximum=500, ymaximum=400, spacing=30):
+    use fom_autosave_screens__confirm(xmaximum=400, ymaximum=200, spacing=30):
         style_prefix "confirm"
 
         text _("Force save"):
@@ -156,3 +186,11 @@ screen fom_autosave_settings__force_save():
                 action Hide("fom_autosave_settings__force_save")
                 sensitive promise.is_complete()
 
+screen fom_autosave_settings__slider(title, value, display, tooltip):
+    $ tooltip_disp = renpy.get_screen("submods", "screens").scope["tooltip"]
+    hbox spacing 10:
+        text title
+        bar value value style "slider_slider" xsize 200:
+            hovered SetField(tooltip_disp, "value", tooltip)
+            unhovered SetField(tooltip_disp, "value", tooltip_disp.default)
+        text display
