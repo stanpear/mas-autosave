@@ -26,7 +26,7 @@ init -998 python in _fom_autosave_http:
     if sys.version_info.major == 2: # Python v2 only
         import urllib2
 
-        def request(method, url, headers=None, body=None):
+        def request(method, url, headers=None, body=None, timeout=10):
             with use_cert(SSL_CERT_FILE):
                 req = urllib2.Request(url, data=body)
                 req.get_method = lambda: method
@@ -37,7 +37,7 @@ init -998 python in _fom_autosave_http:
                     req.add_header(k, v)
 
                 opener = urllib2.build_opener(urllib2.HTTPHandler)
-                res = opener.open(req)
+                res = opener.open(req, timeout=timeout)
                 status = res.getcode()
                 res_body = res.read()
 
