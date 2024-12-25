@@ -25,8 +25,9 @@ init -898 python in _fom_autosave_http:
     import sys
 
     if sys.version_info.major == 2: # Python v2 only
-        import urllib2
         from urllib2 import HTTPError
+        import urllib2
+        import urllib
 
         def request(method, url, headers=None, body=None, timeout=10):
             with use_cert(SSL_CERT_FILE):
@@ -51,3 +52,6 @@ init -898 python in _fom_autosave_http:
 
                 logger.debug("[http] {method} {url} - {code}".format(method=method, url=url, code=status))
                 return status, res_body
+
+        def urlencode(s):
+            return urllib.urlencode(s)

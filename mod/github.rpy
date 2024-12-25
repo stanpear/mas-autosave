@@ -1,5 +1,5 @@
 init -897 python in _fom_autosave_github:
-    from store._fom_autosave_http import request
+    from store._fom_autosave_http import request, urlencode
     from store._fom_autosave_common import PersistentBackup
     from store._fom_autosave_persistent import get_persistent_path
 
@@ -9,8 +9,11 @@ init -897 python in _fom_autosave_github:
     import json
     import base64
 
-    def call_method(http_method, method_path, token=None, payload=None):
+    def call_method(http_method, method_path, token=None, payload=None, query=None):
         github_api_url = "https://api.github.com{method_path}".format(method_path=method_path)
+        if query is not None:
+            github_api_url += "?" + urlencode(query)
+
         request_headers = {
             "User-Agent": "Monika After Story v{version}".format(version=renpy.config.version),
             "Accept": "application/json"
@@ -35,7 +38,7 @@ init -897 python in _fom_autosave_github:
             repo_path=repo_path)
 
         try:
-            status, file_meta = get_file_metadata(repo_owner, repo_name, repo_path, token)
+            status, file_meta = get_repo_file(repo_owner, repo_name, repo_path, token)
             if status != 200:
                 raise ValueError("Unexpected status code {0} != 200".format(status))
             file_sha = file_meta["sha"]
@@ -45,22 +48,36 @@ init -897 python in _fom_autosave_github:
         with open(file_path, "rb") as f:
             file_data = base64.b64encode(f.read())
 
-        params = {
+        body_params = {
             "content": file_data,
             "message": commit_message
         }
 
         if file_sha is not None:
-            params["sha"] = file_sha
+            body_params["sha"] = file_sha
 
-        return call_method("PUT", github_api_url, token, params)
+        return call_method("PUT", github_api_url, token, body_params)
 
-    def get_file_metadata(repo_owner, repo_name, repo_path, token):
+    def get_repo_file(repo_owner, repo_name, repo_path, token):
         github_api_url = "/repos/{owner}/{repo}/contents/{repo_path}".format(
             owner=repo_owner,
             repo=repo_name,
             repo_path=repo_path)
         return call_method("GET", github_api_url, token)
+
+    def download_file(repo_owner, repo_name, repo_path, file_path, token):
+        status, file_meta = get_repo_file(repo_owner, repo_name, repo_path, token)
+        if status != 200:
+            raise ValueError("Unexpected status code {0} != 200".format(status))
+        with open(file_path, "wb") as f:
+            f.write(base64.b64decode(status["content"]))
+
+    def list_commits(repo_owner, repo_name, repo_path, token):
+        github_api_url = "/repos/{owner}/{repo}/commits".format(
+            owner=repo_owner,
+            repo=repo_name)
+        return call_method("GET", github_api_url, token, query={
+            "path": repo_path})
 
     def get_own_repos(token):
         return call_method("GET", "/user/repos", token)
@@ -100,7 +117,14 @@ init -897 python in _fom_autosave_github:
             )
 
         def download(self):
-            pass
+            token = store.mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
+            status, user_info = get_self(token)
+            if status != 200:
+                raise ValueError("Unexpected status code {0} != 200".format(status))
 
+            repo_owner = user_info["login"]
+            repo_name = persistent._fom_autosave_config_github["repo_name"]
+            repo_path = "persistent"
 
-    backup_service = GithubBackup()
+            per_path = get_persistent_path()
+            download_file(repo_owner, repo_name, repo_path, per_path, token)
