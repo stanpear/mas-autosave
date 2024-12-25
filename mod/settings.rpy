@@ -24,14 +24,6 @@ init -978 python in _fom_autosave_config:
     KEY_ID_GITHUB = "fom_autosave_config_github_apikey"
     mas_registerAPIKey(KEY_ID_GITHUB, _("[[Autosave] Github API token"), on_change=on_github_key_change)
 
-    BACKUP_FREQ_NAMES = {
-        0: "Off",
-        1: "Hourly",
-        2: "Daily",
-        3: "Weekly",
-        4: "Monthly"
-    }
-
 
 screen fom_autosave_settings():
     $ github_api_key = mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
@@ -72,8 +64,8 @@ screen fom_autosave_settings():
         vbox:
             use fom_autosave_settings__slider(
                 title=_("Backup frequency"),
-                value=DictValue(persistent._fom_autosave_config_common, "backup_freq", offset=0, range=len(store._fom_autosave_config.BACKUP_FREQ_NAMES) - 1),
-                display=store._fom_autosave_config.BACKUP_FREQ_NAMES[persistent._fom_autosave_config_common["backup_freq"]],
+                value=DictValue(persistent._fom_autosave_config_common, "backup_freq", offset=0, range=len(store._fom_autosave_timer.BACKUP_FREQ) - 1),
+                display=store._fom_autosave_timer.BACKUP_FREQ[persistent._fom_autosave_config_common["backup_freq"]][0],
                 tooltip=_("You can set automatic backup frequency by adjusting this slider."))
 
         textbutton _("Force save"):
