@@ -5,16 +5,17 @@ init -1000 python in _fom_autosave_timer:
     from store import persistent
 
     BACKUP_FREQ = {
-        0: ("Off", None),
-        1: ("Hourly", timedelta(seconds=3600)),
-        2: ("Daily", timedelta(days=1)),
-        3: ("Weekly", timedelta(days=7)),
-        4: ("Monthly", timedelta(days=30))
+        0: ("Hourly", timedelta(seconds=3600)),
+        1: ("Daily", timedelta(days=1)),
+        2: ("Weekly", timedelta(days=7)),
+        3: ("Monthly", timedelta(days=30)),
+        4: ("Off", None)
     }
 
 init 10 python in _fom_autosave_timer:
     from store.mas_submod_utils import functionplugin
     from store._fom_autosave_logging import logger
+    import store
 
     def has_period_elapsed():
         last = persistent._fom_autosave_last_autosave

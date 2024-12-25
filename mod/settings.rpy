@@ -61,18 +61,18 @@ screen fom_autosave_settings():
                 unhovered SetField(tooltip_disp, "value", tooltip_disp.default)
                 xoffset -12
 
-        vbox:
+        hbox:
             use fom_autosave_settings__slider(
                 title=_("Backup frequency"),
                 value=DictValue(persistent._fom_autosave_config_common, "backup_freq", offset=0, range=len(store._fom_autosave_timer.BACKUP_FREQ) - 1),
                 display=store._fom_autosave_timer.BACKUP_FREQ[persistent._fom_autosave_config_common["backup_freq"]][0],
                 tooltip=_("You can set automatic backup frequency by adjusting this slider."))
 
-        textbutton _("Force save"):
-            sensitive github_api_key and repo_name
-            action Show("fom_autosave_settings__force_save")
-            hovered SetField(tooltip_disp, "value", _("Click to force save the persistent to Github."))
-            unhovered SetField(tooltip_disp, "value", tooltip_disp.default)
+            textbutton _("Force save"):
+                sensitive github_api_key and repo_name
+                action Show("fom_autosave_settings__force_save")
+                hovered SetField(tooltip_disp, "value", _("Click to force save the persistent to Github."))
+                unhovered SetField(tooltip_disp, "value", tooltip_disp.default)
 
 screen fom_autosave_settings__repo_select():
     default github_api_key = mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
@@ -89,7 +89,7 @@ screen fom_autosave_settings__repo_select():
             if promise.is_complete():
                 status, repos = promise.get()
         except Exception as e:
-            if error is not None:
+            if error is None:
                 store._fom_autosave_logging.logger.error("Failed to load repositories: {0}", e)
                 error = e
 
@@ -104,10 +104,12 @@ screen fom_autosave_settings__repo_select():
             text _("Loading..."):
                 xalign 0.5
                 text_align 0.5
+
         elif error is not None:
             text _("Failed to load repositories. Check logs."):
                 xalign 0.5
                 text_align 0.5
+
         else:
             hbox:
                 viewport id "repos":
