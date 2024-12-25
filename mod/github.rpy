@@ -70,20 +70,24 @@ init -897 python in _fom_autosave_github:
 
 
     class GithubBackup(PersistentBackup):
+        def __init__(self, reason):
+            super(GithubBackup, self).__init__()
+            self._reason = reason
+
         def is_configured(self):
             token = store.mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
             commit_fmt = persistent._fom_autosave_config_github["commit_fmt"]
             repo_name=persistent._fom_autosave_config_github["repo_name"]
             return bool(token and commit_fmt and repo_name)
 
-        def upload(self, reason):
+        def upload(self):
             token = store.mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
             status, user_info = get_self(token)
             if status != 200:
                 raise ValueError("Unexpected status code {0} != 200".format(status))
 
             commit_fmt = persistent._fom_autosave_config_github["commit_fmt"]
-            commit_message = renpy.substitute(commit_fmt, {"reason": reason})
+            commit_message = renpy.substitute(commit_fmt, {"reason": self._reason})
 
             per_path = get_persistent_path()
             status, commit = commit_file(

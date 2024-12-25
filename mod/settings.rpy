@@ -26,9 +26,10 @@ init -978 python in _fom_autosave_config:
 
 
 screen fom_autosave_settings():
+    $ tooltip_disp = renpy.get_screen("submods", "screens").scope["tooltip"]
     $ github_api_key = mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
     $ repo_name = persistent._fom_autosave_config_github.get("repo_name", None)
-    $ tooltip_disp = renpy.get_screen("submods", "screens").scope["tooltip"]
+    $ backup_service = store._fom_autosave_common.SELECTED_BACKUP(reason="forced save")
 
     vbox:
         style_prefix "check"
@@ -70,7 +71,7 @@ screen fom_autosave_settings():
 
             textbutton _("Force save"):
                 sensitive github_api_key and repo_name
-                action Show("fom_autosave_settings__force_save")
+                action Show("fom_autosave_settings__force_save", None, backup_service)
                 hovered SetField(tooltip_disp, "value", _("Click to force save the persistent to Github."))
                 unhovered SetField(tooltip_disp, "value", tooltip_disp.default)
 
@@ -137,8 +138,8 @@ screen fom_autosave_settings__repo_select():
                 action Hide("fom_autosave_settings__repo_select")
                 sensitive promise.is_complete()
 
-screen fom_autosave_settings__force_save():
-    default promise = store._fom_autosave_task.AsyncTask(store._fom_autosave_github.backup_service.upload, "force save")
+screen fom_autosave_settings__force_save(backup_service):
+    default promise = store._fom_autosave_task.AsyncTask(backup_service.upload)
 
     timer 0.5 action Function(renpy.restart_interaction) repeat True
     on "show" action Function(promise.run_in_background)
