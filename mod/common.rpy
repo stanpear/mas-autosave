@@ -38,23 +38,23 @@ screen fom_autosave_common__save(reason, on_complete=None, on_error=None):
         ypos 10
 
         if not promise.is_complete():
-            text "Backing up persistent..." at fom_autosave_common__save__blink()
+            text "Backing up persistent..." at fom_autosave_common__blink()
 
         elif error is not None:
-            text "Backing up failed, see logs." at fom_autosave_common__save__fade()
+            text "Backing up failed, see logs." at fom_autosave_common__fade()
             timer 1.0 action [Hide("fom_autosave_common__save"),
                               Function(on_error, error) if on_error is not None else NullAction()]
 
         else:
-            text "Backed up successfully." at fom_autosave_common__save__fade()
+            text "Backed up successfully." at fom_autosave_common__fade()
             timer 1.0 action [Hide("fom_autosave_common__save"),
                               Function(on_complete) if on_complete is not None else NullAction()]
 
-transform fom_autosave_common__save__blink(min_opacity=0.2, max_opacity=0.7, duration=1.0):
+transform fom_autosave_common__blink(min_opacity=0.2, max_opacity=0.7, duration=1.0):
     alpha max_opacity
     linear duration alpha min_opacity
     linear duration alpha max_opacity
     repeat
 
-transform fom_autosave_common__save__fade(alpha=1.0, duration=1.0):
+transform fom_autosave_common__fade(alpha=1.0, duration=1.0):
     linear duration alpha 0.0
