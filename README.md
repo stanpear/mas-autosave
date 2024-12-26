@@ -47,7 +47,7 @@
 
 ## ❓ Installing
 
-1. Go to [the latest release page](https://github.com/friends-of-monika/mas-autosave)
+1. Go to [the latest release page](https://github.com/friends-of-monika/mas-autosave/releases/latest)
    and scroll to Assets section.
 2. Download `autosave-VERSION.zip` file.
 3. Drag and drop `Submods` folder from it into your `game` folder.
