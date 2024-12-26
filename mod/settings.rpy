@@ -4,7 +4,7 @@ default persistent._fom_autosave_config_github = None
 init -1000 python:
     if persistent._fom_autosave_config_common is None:
         persistent._fom_autosave_config_common = {
-            "backup_freq": 0,
+            "backup_freq": 1,
             "on_exit": False
         }
 
