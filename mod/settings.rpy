@@ -100,6 +100,8 @@ screen fom_autosave_settings__repo_select():
     modal True
     zorder 200
 
+    default back_action = Hide("fom_autosave_settings__repo_select")
+
     default repos = None
     default error = None
 
@@ -154,8 +156,11 @@ screen fom_autosave_settings__repo_select():
             spacing 10
 
             textbutton _("Back"):
-                action Hide("fom_autosave_settings__repo_select")
+                action back_action
                 sensitive promise.is_complete()
+
+    if promise.is_complete():
+        key "K_ESCAPE" action back_action
 
 screen fom_autosave_settings__force_save(backup_service):
     default promise = store._fom_autosave_task.AsyncTask(backup_service.upload)
@@ -164,6 +169,8 @@ screen fom_autosave_settings__force_save(backup_service):
     on "show" action Function(promise.run_in_background)
     modal True
     zorder 200
+
+    default ok_action = Hide("fom_autosave_settings__force_save")
 
     default error = None
 
@@ -201,8 +208,12 @@ screen fom_autosave_settings__force_save(backup_service):
             spacing 10
 
             textbutton _("Back"):
-                action Hide("fom_autosave_settings__force_save")
+                action ok_action
                 sensitive promise.is_complete()
+
+    if promise.is_complete():
+        key "K_ESCAPE" action ok_action
+        key "K_RETURN" action ok_action
 
 screen fom_autosave_settings__slider(title, value, display, tooltip):
     $ tooltip_disp = renpy.get_screen("submods", "screens").scope["tooltip"]
@@ -226,6 +237,8 @@ screen fom_autosave_settings__commit_select():
     on "show" action Function(promise.run_in_background)
     modal True
     zorder 200
+
+    default back_action = Hide("fom_autosave_settings__commit_select")
 
     default commits = None
     default error = None
@@ -287,8 +300,11 @@ screen fom_autosave_settings__commit_select():
             spacing 10
 
             textbutton _("Back"):
-                action Hide("fom_autosave_settings__commit_select")
+                action back_action
                 sensitive promise.is_complete()
+
+    if promise.is_complete():
+        key "K_ESCAPE" action back_action
 
 screen fom_autosave_settings__load_commit(backup_service):
     default promise = store._fom_autosave_task.AsyncTask(backup_service.download)
@@ -297,6 +313,9 @@ screen fom_autosave_settings__load_commit(backup_service):
     on "show" action Function(promise.run_in_background)
     modal True
     zorder 200
+
+    default ok_action = [SetField(renpy.persistent, "should_save_persistent", False), Quit(confirm=False)]
+    default back_action = Hide("fom_autosave_settings__load_commit")
 
     default error = None
 
@@ -337,9 +356,14 @@ screen fom_autosave_settings__load_commit(backup_service):
 
             if not promise.is_complete() or error is not None:
                 textbutton _("Back"):
-                    action Hide("fom_autosave_settings__load_commit")
+                    action back_action
                     sensitive promise.is_complete()
             else:
                 textbutton _("Restart"):
-                    action [SetField(renpy.persistent, "should_save_persistent", False), Quit(confirm=False)]
+                    action ok_action
                     sensitive promise.is_complete()
+
+    if not promise.is_complete() or error is not None:
+        key "K_ESCAPE" action back_action
+    else:
+        key "K_RETURN" action ok_action
