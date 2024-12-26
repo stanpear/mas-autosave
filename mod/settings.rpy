@@ -37,6 +37,8 @@ screen fom_autosave_settings():
         xmaximum 800
         xfill True
 
+        text _("Feeling confused and need help setting up? {b}Click {a=https://github.com/Friends-of-Monika/mas-autosave?tab=readme-ov-file#-configuring}here{/a}.{/b}")
+
         text _("Github setup checklist:")
         hbox:
             if github_api_key:
