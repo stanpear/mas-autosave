@@ -10,5 +10,5 @@ screen fom_autosave_screens__confirm(**properties):
         vbox:
             align (0.5, 0.5)
             xfill True
-            properties properties
+            properties dict(properties)
             transclude

@@ -4,7 +4,8 @@ default persistent._fom_autosave_config_github = None
 init -1000 python:
     if persistent._fom_autosave_config_common is None:
         persistent._fom_autosave_config_common = {
-            "backup_freq": 0
+            "backup_freq": 0,
+            "on_exit": False
         }
 
     if persistent._fom_autosave_config_github is None:
@@ -69,17 +70,26 @@ screen fom_autosave_settings():
                 display=store._fom_autosave_timer.BACKUP_FREQ[persistent._fom_autosave_config_common["backup_freq"]][0],
                 tooltip=_("You can set automatic backup frequency by adjusting this slider."))
 
+            textbutton _("Save on goodbye"):
+                selected persistent._fom_autosave_config_common["on_exit"]
+                action ToggleDict(persistent._fom_autosave_config_common, "on_exit")
+                hovered SetField(tooltip_disp, "value", _("You can toggle automatic backup on 'Goodbye' by clicking here."))
+                unhovered SetField(tooltip_disp, "value", tooltip_disp.default)
+
+        hbox:
             textbutton _("Force save"):
                 sensitive github_api_key and repo_name
                 action Show("fom_autosave_settings__force_save", None, backup_service)
                 hovered SetField(tooltip_disp, "value", _("Click to force save the persistent to Github."))
                 unhovered SetField(tooltip_disp, "value", tooltip_disp.default)
+                xoffset -22
 
             textbutton _("Load persistent"):
                 sensitive github_api_key and repo_name
                 action Show("fom_autosave_settings__commit_select")
                 hovered SetField(tooltip_disp, "value", _("Click to select saved persistent to load."))
                 unhovered SetField(tooltip_disp, "value", tooltip_disp.default)
+                xoffset -32
 
 screen fom_autosave_settings__repo_select():
     default github_api_key = mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
@@ -151,14 +161,16 @@ screen fom_autosave_settings__force_save(backup_service):
     timer 0.5 action Function(renpy.restart_interaction) repeat True
     on "show" action Function(promise.run_in_background)
 
+    default error = None
+
     python:
         try:
             if promise.is_complete():
                 promise.get()
-            error = None
         except Exception as e:
-            store._fom_autosave_logging.logger.error(_("Failed to upload save: {0}"), e)
-            error = e
+            if error is None:
+                store._fom_autosave_logging.logger.error(_("Failed to upload save: {0}"), e)
+                error = e
 
     use fom_autosave_screens__confirm(xmaximum=400, ymaximum=200, spacing=30):
         style_prefix "confirm"
@@ -199,6 +211,7 @@ screen fom_autosave_settings__slider(title, value, display, tooltip):
 
 screen fom_autosave_settings__commit_select():
     default github_api_key = mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
+    default backup_service = store._fom_autosave_common.SELECTED_BACKUP(None)
     default promise = store._fom_autosave_task.AsyncTask(store._fom_autosave_github.list_commits,
         repo_owner=persistent._fom_autosave_config_github["repo_owner"],
         repo_name=persistent._fom_autosave_config_github["repo_name"],
@@ -247,13 +260,19 @@ screen fom_autosave_settings__commit_select():
                     mousewheel True
                     draggable True
 
-                    vbox:
+                    vbox spacing 10:
                         for commit in commits:
                             $ commit_name = commit["commit"]["message"]
                             $ commit_date = commit["commit"]["author"]["date"]
+                            $ commit_sha = commit["sha"]
+
                             vbox:
-                                textbutton "[commit_name!q]" action ([Hide("fom_autosave_settings__commit_select")])
-                                text _("{size=-6}Uploaded at [commit_date]{/size}")
+                                textbutton "[commit_name!q]" action ([
+                                    Hide("fom_autosave_settings__commit_select"),
+                                    SetField(backup_service, "commit", commit_sha),
+                                    Show("fom_autosave_settings__load_commit", None, backup_service)])
+                                text _("{size=-6}Uploaded at [commit_date]{/size}") xoffset 5
+                                text "{size=-10}[commit_sha]{/size}" xoffset 5
 
                 vbar value YScrollValue("commits")
 
@@ -264,3 +283,55 @@ screen fom_autosave_settings__commit_select():
             textbutton _("Back"):
                 action Hide("fom_autosave_settings__commit_select")
                 sensitive promise.is_complete()
+
+screen fom_autosave_settings__load_commit(backup_service):
+    default promise = store._fom_autosave_task.AsyncTask(backup_service.download)
+
+    timer 0.5 action Function(renpy.restart_interaction) repeat True
+    on "show" action Function(promise.run_in_background)
+
+    default error = None
+
+    python:
+        try:
+            if promise.is_complete():
+                promise.get()
+        except Exception as e:
+            if error is None:
+                store._fom_autosave_logging.logger.error(_("Failed to load persistent: {0}"), e)
+                error = e
+
+    use fom_autosave_screens__confirm(xmaximum=500, ymaximum=200, spacing=30):
+        style_prefix "confirm"
+
+        text _("Load persistent"):
+            style "confirm_prompt"
+            xalign 0.5
+
+        if not promise.is_complete():
+            text _("Loading..."):
+                xalign 0.5
+                text_align 0.5
+        elif error is not None:
+            text _("Failed to load persistent. Check logs.\n"
+                   "{i}Your current persistent was not overwritten.{/i}"):
+                xalign 0.5
+                text_align 0.5
+        else:
+            text _("Persistent loaded.\n"
+                   "The game needs to be restarted now."):
+                xalign 0.5
+                text_align 0.5
+
+        hbox:
+            xalign 0.5
+            spacing 10
+
+            if not promise.is_complete() or error is not None:
+                textbutton _("Back"):
+                    action Hide("fom_autosave_settings__load_commit")
+                    sensitive promise.is_complete()
+            else:
+                textbutton _("Restart"):
+                    action [SetField(renpy.persistent, "should_save_persistent", False), Quit(confirm=False)]
+                    sensitive promise.is_complete()

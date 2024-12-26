@@ -6,8 +6,9 @@ init -897 python in _fom_autosave_github:
     from store import persistent
     import store
 
-    import json
     import base64
+    import json
+    import os
 
     def call_method(http_method, method_path, token=None, payload=None, query=None):
         github_api_url = "https://api.github.com{method_path}".format(method_path=method_path)
@@ -58,19 +59,27 @@ init -897 python in _fom_autosave_github:
 
         return call_method("PUT", github_api_url, token, body_params)
 
-    def get_repo_file(repo_owner, repo_name, repo_path, token):
+    def get_repo_file(repo_owner, repo_name, repo_path, token, sha=None):
         github_api_url = "/repos/{owner}/{repo}/contents/{repo_path}".format(
             owner=repo_owner,
             repo=repo_name,
             repo_path=repo_path)
-        return call_method("GET", github_api_url, token)
 
-    def download_file(repo_owner, repo_name, repo_path, file_path, token):
-        status, file_meta = get_repo_file(repo_owner, repo_name, repo_path, token)
+        query = {}
+        if sha is not None:
+            query["ref"] = sha
+
+        return call_method("GET",
+            github_api_url,
+            token,
+            query=query)
+
+    def download_file(repo_owner, repo_name, repo_path, file_path, token, sha=None):
+        status, file_meta = get_repo_file(repo_owner, repo_name, repo_path, token, sha)
         if status != 200:
             raise ValueError("Unexpected status code {0} != 200".format(status))
         with open(file_path, "wb") as f:
-            f.write(base64.b64decode(status["content"]))
+            f.write(base64.b64decode(file_meta["content"]))
 
     def list_commits(repo_owner, repo_name, repo_path, token):
         github_api_url = "/repos/{owner}/{repo}/commits".format(
@@ -87,9 +96,10 @@ init -897 python in _fom_autosave_github:
 
 
     class GithubBackup(PersistentBackup):
-        def __init__(self, reason):
+        def __init__(self, reason=None, commit_sha=None):
             super(GithubBackup, self).__init__()
-            self._reason = reason
+            self.reason = reason
+            self.commit = commit_sha
 
         def is_configured(self):
             token = store.mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
@@ -100,9 +110,11 @@ init -897 python in _fom_autosave_github:
         def upload(self):
             token = store.mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
             commit_fmt = persistent._fom_autosave_config_github["commit_fmt"]
-            commit_message = renpy.substitute(commit_fmt, {"reason": self._reason})
+            commit_message = renpy.substitute(commit_fmt, {"reason": self.reason})
 
             per_path = get_persistent_path()
+            renpy.save_persistent()
+
             status, commit = commit_file(
                 file_path=per_path,
                 repo_path="persistent",
@@ -119,4 +131,4 @@ init -897 python in _fom_autosave_github:
             repo_path = "persistent"
 
             per_path = get_persistent_path()
-            download_file(repo_owner, repo_name, repo_path, per_path, token)
+            download_file(repo_owner, repo_name, repo_path, per_path, token, self.commit)
