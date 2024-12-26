@@ -97,6 +97,8 @@ screen fom_autosave_settings__repo_select():
 
     timer 0.5 action Function(renpy.restart_interaction) repeat True
     on "show" action Function(promise.run_in_background)
+    modal True
+    zorder 200
 
     default repos = None
     default error = None
@@ -160,6 +162,8 @@ screen fom_autosave_settings__force_save(backup_service):
 
     timer 0.5 action Function(renpy.restart_interaction) repeat True
     on "show" action Function(promise.run_in_background)
+    modal True
+    zorder 200
 
     default error = None
 
@@ -220,6 +224,8 @@ screen fom_autosave_settings__commit_select():
 
     timer 0.5 action Function(renpy.restart_interaction) repeat True
     on "show" action Function(promise.run_in_background)
+    modal True
+    zorder 200
 
     default commits = None
     default error = None
@@ -289,6 +295,8 @@ screen fom_autosave_settings__load_commit(backup_service):
 
     timer 0.5 action Function(renpy.restart_interaction) repeat True
     on "show" action Function(promise.run_in_background)
+    modal True
+    zorder 200
 
     default error = None
 
