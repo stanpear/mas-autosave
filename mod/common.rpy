@@ -13,13 +13,28 @@ init -999 python in _fom_autosave_common:
 
 init 100 python in _fom_autosave_common:
     from store._fom_autosave_github import GithubBackup
+    from store import persistent
+    from datetime import datetime
+
     SELECTED_BACKUP = GithubBackup # only Github for now
+    is_any_pending = False
 
     def backup_persistent(reason="autosave", on_complete=None, on_error=None):
+        def local_on_complete():
+            global is_any_pending
+            is_any_pending = False
+
+            persistent._fom_autosave_last_save = datetime.now()
+            if on_complete is not None:
+                on_complete()
+
         backup_service = SELECTED_BACKUP(reason)
-        if SELECTED_BACKUP.is_configured():
+        if backup_service.is_configured():
+            global is_any_pending
+            is_any_pending = True
+
             renpy.show_screen("fom_autosave_common__save", backup_service,
-                on_complete, on_error)
+                local_on_complete, on_error)
 
 screen fom_autosave_common__save(backup_service, on_complete=None, on_error=None):
     default promise = store._fom_autosave_task.AsyncTask(backup_service.upload)
