@@ -5,11 +5,11 @@ init -1000 python in _fom_autosave_timer:
     from store import persistent
 
     BACKUP_FREQ = {
-        0: ("Hourly", timedelta(seconds=3600)),
-        1: ("Daily", timedelta(days=1)),
-        2: ("Weekly", timedelta(days=7)),
-        3: ("Monthly", timedelta(days=30)),
-        4: ("Off", None)
+        0: (_("Hourly"), timedelta(seconds=3600)),
+        1: (_("Daily"), timedelta(days=1)),
+        2: (_("Weekly"), timedelta(days=7)),
+        3: (_("Monthly"), timedelta(days=30)),
+        4: (_("Off"), None)
     }
 
 init 10 python in _fom_autosave_timer:
@@ -39,7 +39,7 @@ init 10 python in _fom_autosave_timer:
             freq = persistent._fom_autosave_config_common["backup_freq"]
             name, _ = BACKUP_FREQ[freq]
             store._fom_autosave_common.backup_persistent(
-                reason="{0} auto-backup".format(name),
+                reason=_("{0} auto-backup").format(name),
                 on_complete=on_backup_complete)
 
     @functionplugin("ch30_hour")

@@ -30,7 +30,7 @@ screen fom_autosave_settings():
     $ tooltip_disp = renpy.get_screen("submods", "screens").scope["tooltip"]
     $ github_api_key = mas_getAPIKey(store._fom_autosave_config.KEY_ID_GITHUB)
     $ repo_name = persistent._fom_autosave_config_github.get("repo_name", None)
-    $ backup_service = store._fom_autosave_common.SELECTED_BACKUP(reason="forced save")
+    $ backup_service = store._fom_autosave_common.SELECTED_BACKUP(reason=_("forced save"))
 
     vbox:
         style_prefix "check"
