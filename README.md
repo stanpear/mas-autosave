@@ -204,7 +204,6 @@ piece of cake!~ 🍰
 
 ## 💬 Join our Discord
 
-We're up to chat! Join our Discord server
-[here][https://mon.icu/discord].
+We're up to chat! Join our Discord server [here](https://mon.icu/discord).
 
-[![Discord server invitation][https://discordapp.com/api/guilds/1029849988953546802/widget.png?style=banner3]][mon.icu/discord]
+[![Discord server invitation](https://discordapp.com/api/guilds/1029849988953546802/widget.png?style=banner3)](https://mon.icu/discord)
