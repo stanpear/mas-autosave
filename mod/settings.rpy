@@ -32,6 +32,11 @@ screen fom_autosave_settings():
     $ repo_name = persistent._fom_autosave_config_github.get("repo_name", None)
     $ backup_service = store._fom_autosave_common.SELECTED_BACKUP(reason=_("forced save"))
 
+    if persistent._fom_autosave_last_save:
+        $ last_backup = persistent._fom_autosave_last_save.strftime("%Y-%m-%d %H:%m")
+    else:
+        $ last_backup = None
+
     vbox:
         style_prefix "check"
         xmaximum 800
@@ -77,6 +82,10 @@ screen fom_autosave_settings():
                 action ToggleDict(persistent._fom_autosave_config_common, "on_exit")
                 hovered SetField(tooltip_disp, "value", _("You can toggle automatic backup on 'Goodbye' by clicking here."))
                 unhovered SetField(tooltip_disp, "value", tooltip_disp.default)
+
+        if last_backup:
+            hbox:
+                text _("Last successful backup: [last_backup]")
 
         hbox:
             textbutton _("Force save"):

@@ -1,4 +1,4 @@
-default persistent._fom_autosave_last_autosave = None
+default persistent._fom_autosave_last_save = None
 
 init -1000 python in _fom_autosave_timer:
     from datetime import datetime, timedelta
@@ -21,11 +21,11 @@ init 10 python in _fom_autosave_timer:
     expect_goodbye = False
 
     def has_period_elapsed():
-        last = persistent._fom_autosave_last_autosave
+        last = persistent._fom_autosave_last_save
         freq = persistent._fom_autosave_config_common["backup_freq"]
         now = datetime.now()
 
-        _, delta = BACKUP_FREQ[freq]
+        delta = BACKUP_FREQ[freq][1]
         if delta is None:
             return False
         if last is None:
@@ -36,11 +36,11 @@ init 10 python in _fom_autosave_timer:
     def try_timed_backup():
         if has_period_elapsed():
             logger.debug("Attempting timed backup (may be overridden if remote is not configured.)")
-            freq_name = persistent._fom_autosave_config_common["backup_freq"][0]
+            freq_name = BACKUP_FREQ[persistent._fom_autosave_config_common["backup_freq"]][0]
             store._fom_autosave_common.backup_persistent(reason=_("{0} auto-backup").format(freq_name))
 
-    @functionplugin("ch30_hour")
-    def do_hourly():
+    @functionplugin("ch30_minute")
+    def do_minute():
         try_timed_backup()
 
     @functionplugin("ch30_start")
@@ -49,8 +49,11 @@ init 10 python in _fom_autosave_timer:
 
     @functionplugin("call_next_event")
     def do_event():
-        global expect_goodbye
         event = MASEventList.peek()
+        if event is None:
+            return
+
+        global expect_goodbye
         expect_goodbye = event.evl in mas_all_ev_db_map["BYE"]
 
     @functionplugin("_quit")
