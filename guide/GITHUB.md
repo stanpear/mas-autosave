@@ -162,8 +162,8 @@ and saving your persistent.
 <details>
 <summary>🖼️ Click here to see screenshots</summary>
 
-![Screenshot 1](doc/ghsetup_mas_6.png)
-![Screenshot 2](doc/ghsetup_mas_7.png)
+![Screenshot 1](../doc/ghsetup_mas_6.png)
+![Screenshot 2](../doc/ghsetup_mas_7.png)
 
 </details>
 
