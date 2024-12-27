@@ -25,7 +25,7 @@ Click on plus button at the top, and click on 'New repository'
 Here, enter any desired name (`monika-autosaves` is a good example), and set it as private
 
 > [!WARNING]
-> Your persistent contains all Monika's memories about you &mdash; including private info too.
+> Your persistent contains all Monika's memories about you &mdash; including private info too.<br>
 > Keep your persistent safe &mdash; make your repository private 🛡️
 
 <details>
