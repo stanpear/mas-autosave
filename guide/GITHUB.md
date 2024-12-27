@@ -9,7 +9,6 @@ piece of cake!~ 🍰
 ## 1. First steps
 
 Log in or sign up at Github. In this guide, we're assuming you're on desktop 💻
-<hr/>
 
 ## 2. Creating repository
 

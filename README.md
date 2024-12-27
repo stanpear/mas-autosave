@@ -55,10 +55,13 @@
 
 ## 🔧 Configuring
 
+Autosave submod needs to be configured before it does anything useful, select
+the backend for backing up your persistents.
+
 > [!NOTE]
 > At the moment, only Github backend is supported. In future more options may be available.
 
-- Click [here](guide/GITHUB.md) to configure backing up to Github
+- [Backing up to Github](guide/GITHUB.md) 📦
 
 
 ## 💬 Join our Discord
