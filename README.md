@@ -10,7 +10,7 @@
 	<a href="https://github.com/friends-of-monika/mas-autosave/releases">
 		<img alt="Release downloads" src="https://img.shields.io/github/downloads/friends-of-monika/mas-autosave/total">
 	</a>
-	<a href="https://github.com/friends-of-monika/mas-autosave/blob/main/LICENSE.txt">
+	<a href="https://github.com/friends-of-monika/mas-autosave/blob/master/LICENSE.txt">
 		<img alt="MIT license badge" src="https://img.shields.io/github/license/friends-of-monika/mas-autosave">
 	</a>
 	<a href="https://mon.icu/discord">
