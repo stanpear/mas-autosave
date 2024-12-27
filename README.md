@@ -67,6 +67,7 @@ First setup of Autosave submod may be a little tricky, but if you follow this gu
 piece of cake!~ 🍰
 
 1. Log in or sign up at Github. In this guide, we're assuming you're on desktop 💻
+   <hr/>
 
 2. Click on plus button at the top, and click on 'New repository'
    <details>
@@ -76,6 +77,7 @@ piece of cake!~ 🍰
    ![Screenshot 2](doc/ghsetup_repo_2.png)
 
    </details>
+   <hr/>
 
 3. Here, enter any desired name (`monika-autosaves` is a good example), and set it as private
 
@@ -87,6 +89,7 @@ piece of cake!~ 🍰
    ![Screenshot 1](doc/ghsetup_repo_3.png)
 
    </details>
+   <hr/>
 
 4. Go to your settings &mdash; click on your avatar in the top corner, then on 'Settings'
    <details>
@@ -96,6 +99,7 @@ piece of cake!~ 🍰
    ![Screenshot 2](doc/ghsetup_token_2.png)
 
    </details>
+   <hr/>
 
 5. Look to the left, and scroll all the way to the bottom of the menu &mdash; you'll need
    the section labelled 'Developer settings'
@@ -105,6 +109,7 @@ piece of cake!~ 🍰
    ![Screenshot 1](doc/ghsetup_token_3.png)
 
    </details>
+   <hr/>
 
 6. Now, click on 'Personal access tokens' section to unfold it, then on 'Fine-grained tokens'
    <details>
@@ -114,6 +119,7 @@ piece of cake!~ 🍰
    ![Screenshot 2](doc/ghsetup_token_5.png)
 
    </details>
+   <hr/>
 
 7. Click on 'Generate new token' button
 
@@ -125,6 +131,7 @@ piece of cake!~ 🍰
    ![Screenshot 1](doc/ghsetup_token_6.png)
 
    </details>
+   <hr/>
 
 8. Type anything you like in the 'Token name' field &mdash; it only serves as a label for you;
    next up, select 'No expiration' under 'Expiration' field &mdash; so that you won't have to
@@ -166,6 +173,7 @@ piece of cake!~ 🍰
    </details>
 
    Github stuff is behind us now &mdash; let's set up Autosave submod in game 🎉
+   <hr/>
 
 9. Open Submods menu in settings, and click on 'API Keys' section on the left
    <details>
@@ -174,6 +182,7 @@ piece of cake!~ 🍰
    ![Screenshot 1](doc/ghsetup_mas_1.png)
 
    </details>
+   <hr/>
 
 10. Find '\[Autosave\] Github API token' field, and click 'Paste'
     <details>
@@ -183,6 +192,7 @@ piece of cake!~ 🍰
     ![Screenshot 1](doc/ghsetup_mas_3.png)
 
     </details>
+    <hr/>
 
 11. Open 'Submods' section on the left, and find 'Autosave' submod in the list &mdash; then, click 'Select repository' and select your repository from earlier steps
     <details>
@@ -192,6 +202,7 @@ piece of cake!~ 🍰
     ![Screenshot 2](doc/ghsetup_mas_5.png)
 
     </details>
+    <hr/>
 
 12. You're all set! 🥳 You can check that it works by clicking 'Force save'
     and saving your persistent.
@@ -202,6 +213,7 @@ piece of cake!~ 🍰
     ![Screenshot 2](doc/ghsetup_mas_7.png)
 
     </details>
+    <hr/>
 
 
 ## 💬 Join our Discord
