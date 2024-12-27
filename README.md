@@ -55,8 +55,8 @@
 
 ## 🔧 Configuring
 
-Autosave submod needs to be configured before it does anything useful, select
-the backend for backing up your persistents.
+Autosave submod needs to be configured before it does anything useful, below you
+can find guides to configure various backends.
 
 > [!NOTE]
 > At the moment, only Github backend is supported. In future more options may be available.
