@@ -21,6 +21,10 @@
 	</a>
 </p>
 
+> [!WARNING]
+> This is an OPEN BETA. This means the submod is subject to *frequent* changes
+> and may be not exactly stable. With that in mind, carry on!~
+
 ## 🌟 Features
 
 * Convenient and easy-to-figure-out settings UI
