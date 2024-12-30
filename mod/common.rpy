@@ -14,10 +14,15 @@ init -999 python in _fom_autosave_common:
 init 100 python in _fom_autosave_common:
     from store._fom_autosave_github import GithubBackup
     from store import persistent
+    import store
+
     from datetime import datetime
 
     SELECTED_BACKUP = GithubBackup # only Github for now
     is_any_pending = False
+
+    def is_safe_to_backup():
+        return not store.mas_globals.tt_detected
 
     def backup_persistent(reason="autosave", on_complete=None, on_error=None):
         def local_on_complete():
@@ -29,7 +34,7 @@ init 100 python in _fom_autosave_common:
                 on_complete()
 
         backup_service = SELECTED_BACKUP(reason)
-        if backup_service.is_configured():
+        if backup_service.is_configured() and is_safe_to_backup():
             global is_any_pending
             is_any_pending = True
 

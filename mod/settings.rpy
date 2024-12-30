@@ -5,13 +5,14 @@ init -1000 python:
     if persistent._fom_autosave_config_common is None:
         persistent._fom_autosave_config_common = {
             "backup_freq": 1,
-            "on_exit": False
+            "on_exit": False,
+            "show_load_warning": True
         }
 
     if persistent._fom_autosave_config_github is None:
         persistent._fom_autosave_config_github = {
             "repo_name": "",
-            "commit_fmt": "[[Autosave] Persistent backup ([reason])"
+            "commit_fmt": "Automatic backup ([reason])"
         }
 
 init -978 python in _fom_autosave_config:
@@ -32,8 +33,11 @@ screen fom_autosave_settings():
     $ repo_name = persistent._fom_autosave_config_github.get("repo_name", None)
     $ backup_service = store._fom_autosave_common.SELECTED_BACKUP(reason=_("forced save"))
 
+    $ is_configured = store._fom_autosave_common.SELECTED_BACKUP().is_configured()
+    $ can_save = store._fom_autosave_common.is_safe_to_backup()
+
     if persistent._fom_autosave_last_save:
-        $ last_backup = persistent._fom_autosave_last_save.strftime("%Y-%m-%d %H:%m")
+        $ last_backup = persistent._fom_autosave_last_save.strftime("%Y-%m-%d at %H:%M:%S")
     else:
         $ last_backup = None
 
@@ -43,6 +47,7 @@ screen fom_autosave_settings():
         xfill True
 
         text _("Feeling confused and need help setting up? {b}Click {a=https://github.com/Friends-of-Monika/mas-autosave?tab=readme-ov-file#-configuring}here{/a}.{/b}")
+        null height 10
 
         text _("Github setup checklist:")
         hbox:
@@ -70,6 +75,14 @@ screen fom_autosave_settings():
                 unhovered SetField(tooltip_disp, "value", tooltip_disp.default)
                 xoffset -12
 
+        if can_save:
+            text _("- There are {color=#84cc16}no issues{/color} blocking backups")
+
+        if store.mas_globals.tt_detected:
+            text _("- {b}{color=#ef4444}Time travel{/color}{/b} is detected in this session.")
+
+        null height 10
+
         hbox:
             use fom_autosave_settings__slider(
                 title=_("Backup frequency"),
@@ -84,19 +97,24 @@ screen fom_autosave_settings():
                 unhovered SetField(tooltip_disp, "value", tooltip_disp.default)
 
         if last_backup:
-            hbox:
-                text _("Last successful backup: [last_backup]")
+            text _("Last successful backup was on [last_backup]")
+
+        null height 10
 
         hbox:
             textbutton _("Force save"):
-                sensitive github_api_key and repo_name
-                action Show("fom_autosave_settings__force_save", None, backup_service)
+                sensitive is_configured
+                if can_save:
+                    action Show("fom_autosave_settings__force_save", None, backup_service)
+                else:
+                    action Show("fom_autosave_settings__timetravel_error")
+
                 hovered SetField(tooltip_disp, "value", _("Click to force save the persistent to Github."))
                 unhovered SetField(tooltip_disp, "value", tooltip_disp.default)
                 xoffset -22
 
             textbutton _("Load persistent"):
-                sensitive github_api_key and repo_name
+                sensitive is_configured
                 action Show("fom_autosave_settings__commit_select")
                 hovered SetField(tooltip_disp, "value", _("Click to select saved persistent to load."))
                 unhovered SetField(tooltip_disp, "value", tooltip_disp.default)
@@ -293,7 +311,8 @@ screen fom_autosave_settings__commit_select():
                     vbox spacing 10:
                         for commit in commits:
                             $ commit_name = commit["commit"]["message"]
-                            $ commit_date = commit["commit"]["author"]["date"]
+                            $ commit_date = datetime.datetime.strptime(commit["commit"]["author"]["date"], "%Y-%m-%dT%H:%M:%SZ")
+                            $ commit_date_friendly = commit_date.strftime("%Y-%m-%d at %H:%M:%S")
                             $ commit_sha = commit["sha"]
 
                             vbox:
@@ -301,8 +320,9 @@ screen fom_autosave_settings__commit_select():
                                     Hide("fom_autosave_settings__commit_select"),
                                     SetField(backup_service, "commit", commit_sha),
                                     Show("fom_autosave_settings__load_commit", None, backup_service)])
-                                text _("{size=-6}Uploaded at [commit_date]{/size}") xoffset 5
-                                text "{size=-10}[commit_sha]{/size}" xoffset 5
+
+                                text _("{size=-6}Uploaded on [commit_date_friendly]{/size}") xoffset 5
+                                text "{alpha=0.5}{size=-10}[commit_sha]{/size}{/alpha}" xoffset 5
 
                 vbar value YScrollValue("commits")
 
@@ -378,3 +398,27 @@ screen fom_autosave_settings__load_commit(backup_service):
         key "K_ESCAPE" action back_action
     else:
         key "K_RETURN" action ok_action
+
+screen fom_autosave_settings__timetravel_error():
+    default ok_action = Hide("fom_autosave_settings__timetravel_error")
+
+    modal True
+    zorder 200
+
+    use fom_autosave_screens__confirm(xmaximum=600, ymaximum=200, spacing=30):
+        style_prefix "confirm"
+
+        text _("Force save"):
+            style "confirm_prompt"
+            xalign 0.5
+
+        text _("{b}{color=#ef4444}Time travel{/color}{/b} has been detected in this session.\n"
+               "Refusing to save."):
+            xalign 0.5
+            text_align 0.5
+
+        hbox xalign 0.5 spacing 10:
+            textbutton _("Back") action ok_action
+
+    key "K_ESCAPE" action ok_action
+    key "K_RETURN" action ok_action
