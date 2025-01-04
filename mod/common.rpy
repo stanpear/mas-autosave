@@ -33,13 +33,19 @@ init 100 python in _fom_autosave_common:
             if on_complete is not None:
                 on_complete()
 
+        def local_on_error(e):
+            global is_any_pending
+            is_any_pending = False
+            if on_error is not None:
+                on_error()
+
         backup_service = SELECTED_BACKUP(reason)
         if backup_service.is_configured() and is_safe_to_backup():
             global is_any_pending
             is_any_pending = True
 
             renpy.show_screen("fom_autosave_common__save", backup_service,
-                local_on_complete, on_error)
+                local_on_complete, local_on_error)
 
 screen fom_autosave_common__save(backup_service, on_complete=None, on_error=None):
     default promise = store._fom_autosave_task.AsyncTask(backup_service.upload)
