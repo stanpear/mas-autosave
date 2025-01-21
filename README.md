@@ -67,6 +67,12 @@ can find guides to configure various backends.
 
 - [Backing up to Github](guide/GITHUB.md) 📦
 
+## 🤔 FAQ
+
+### How do I browse saved persistents?
+
+Using Github backend for saving persistents, you can simply navigate to `https://github.com/YOUR_USERNAME/REPO_NAME`,
+where `YOUR_USERNAME` is your Github username, and `REPO_NAME` is the name of the repository you selected in game.
 
 ## 💬 Join our Discord
 
